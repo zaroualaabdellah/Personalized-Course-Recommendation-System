@@ -1,0 +1,70 @@
+courses:
+  - name: Introduction to Computer Science
+    provider: Harvard University
+    platform: edX
+  - name: Biology - Life on Earth
+    provider: Coursera
+    platform: Coursera
+  - name: Introduction to Psychology
+    provider: Yale University
+    platform: Coursera
+  - name: Environmental Science
+    provider: University of Leeds
+    platform: FutureLearn
+  - name: Introduction to Literature
+    provider: MIT
+    platform: edX
+  - name: Medical Terminology
+    provider: University of Pittsburgh
+    platform: Coursera
+  - name: Data Science and Machine Learning
+    provider: Stanford University
+    platform: Coursera
+  - name: Cell Biology
+    provider: Massachusetts Institute of Technology
+    platform: edX
+  - name: Positive Psychology
+    provider: University of North Carolina at Chapel Hill
+    platform: Coursera
+  - name: Environmental Law and Policy
+    provider: Vermont Law School
+    platform: Coursera
+  - name: Programming for Everybody (Getting Started with Python)
+    provider: University of Michigan
+    platform: Coursera
+  - name: Anatomy - Human Neuroanatomy
+    provider: University of Michigan
+    platform: Coursera
+  - name: Introduction to Cognitive Psychology
+    provider: Duke University
+    platform: Coursera
+  - name: Climate Change and Health - From Science to Action
+    provider: Harvard University
+    platform: edX
+  - name: English for Science, Technology, Engineering, and Mathematics
+    provider: University of Pennsylvania
+    platform: Coursera
+  - name: An Introduction to American Law
+    provider: University of Pennsylvania
+    platform: Coursera
+  - name: Introduction to Chemistry - Reactions and Ratios
+    provider: Duke University
+    platform: Coursera
+  - name: Epidemiology - The Basic Science of Public Health
+    provider: University of North Carolina at Chapel Hill
+    platform: Coursera
+  - name: Computer Science - Programming with a Purpose
+    provider: Princeton University
+    platform: Coursera
+  - name: Introduction to Statistics and Data Analysis
+    provider: Rice University
+    platform: Coursera
+  - name: Genes and the Human Condition (From Behavior to Biotechnology)
+    provider: University of Maryland
+    platform: Coursera
+  - name: Ethics, Technology, and the Future of Medicine
+    provider: Georgetown University
+    platform: edX
+  - name: Fundamentals of Immunology
+    provider: Harvard University
+    platform: Harvard
