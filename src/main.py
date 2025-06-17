@@ -6,6 +6,12 @@ import json
 from crewai import Crew, Process
 from PyPDF2 import PdfReader
 import docx
+from dotenv import load_dotenv
+
+from data.database import AuthManager, DatabaseManager
+
+# Load environment variables
+load_dotenv()
 
 # Set environment variable to disable telemetry
 os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
@@ -14,6 +20,9 @@ os.environ["CREWAI_DISABLE_TELEMETRY"] = "true"
 from agent_loader import load_llm, create_agents
 from task_factory import get_ad_campaign_task, get_ad_campaign_written_task, format_courses_list, get_cv_analysis_task
 from data_handler import load_courses_data
+
+# Import authentication modules
+ 
 
 def extract_text_from_pdf(pdf_file):
     """Extract text content from a PDF file."""
@@ -131,7 +140,7 @@ def analyze_cv_with_agent(cv_text, llm):
             'GPA': 3.0
         }
 
-def run_recommendation(student_data):
+def run_recommendation(student_data, db_manager, user_id):
     """Run the recommendation system with the provided student data."""
     # Format student description
     customer_description = f"""
@@ -207,14 +216,47 @@ def run_recommendation(student_data):
     try:
         copywriting_result = copywriting_crew.kickoff()
         progress_bar2.progress(100)
+        
+        # Save recommendation to database
+        db_manager.save_recommendation(
+            user_id, 
+            student_data, 
+            str(targeting_result), 
+            str(copywriting_result)
+        )
+        
         return targeting_result, copywriting_result
     except Exception as e:
         st.error(f"An error occurred during recommendation creation: {str(e)}")
         return targeting_result, None
 
-def main():
-    st.set_page_config(page_title="Course Recommendation System", layout="wide")
+def show_user_dashboard(auth_manager, db_manager):
+    """Show user dashboard with profile and history"""
+    user = auth_manager.get_current_user()
     
+    # Sidebar with user info and logout
+    with st.sidebar:
+        st.header(f"Welcome, {user.get('full_name', user.get('username', 'User'))}! 👋")
+        st.write(f"**Username:** {user.get('username')}")
+        st.write(f"**Email:** {user.get('email')}")
+        
+        st.markdown("---")
+        
+        if st.button("🔓 Logout", type="secondary"):
+            auth_manager.logout()
+        
+        st.markdown("---")
+        
+        # Navigation
+        page = st.radio("Navigate", ["Get Recommendations", "My History"])
+    
+    if page == "Get Recommendations":
+        show_recommendation_page(db_manager, user['id'])
+    else:
+        show_history_page(db_manager, user['id'])
+
+def show_recommendation_page(db_manager, user_id):
+    """Show the main recommendation page"""
     st.title("Personalized Course Recommendation System")
     st.write("Get personalized course recommendations based on your profile")
     
@@ -323,7 +365,7 @@ def main():
     # Process recommendations if data is available and button is pressed
     if student_data and submit_pressed:
         with st.spinner("Analyzing your profile and finding the best courses for you..."):
-            targeting_result, copywriting_result = run_recommendation(student_data)
+            targeting_result, copywriting_result = run_recommendation(student_data, db_manager, user_id)
             
             if targeting_result:
                 # Display results in tabs
@@ -345,8 +387,8 @@ def main():
                 # Add download option
                 results_df = pd.DataFrame([{
                     'Profile': json.dumps(student_data),
-                    'Recommended Courses': targeting_result,
-                    'Course Details': copywriting_result if copywriting_result else "Not available"
+                    'Recommended Courses': str(targeting_result),
+                    'Course Details': str(copywriting_result) if copywriting_result else "Not available"
                 }])
                 
                 csv = results_df.to_csv(index=False)
@@ -356,6 +398,64 @@ def main():
                     file_name="course_recommendations.csv",
                     mime="text/csv"
                 )
+
+def show_history_page(db_manager, user_id):
+    """Show user's recommendation history"""
+    st.title("My Recommendation History")
+    
+    recommendations = db_manager.get_user_recommendations(user_id)
+    
+    if not recommendations:
+        st.info("You haven't generated any recommendations yet. Go to 'Get Recommendations' to start!")
+        return
+    
+    st.write(f"You have {len(recommendations)} saved recommendations:")
+    
+    for i, rec in enumerate(recommendations, 1):
+        with st.expander(f"Recommendation #{i} - {rec['created_at'].strftime('%Y-%m-%d %H:%M')}"):
+            
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                st.subheader("Your Profile")
+                profile = rec['student_profile']
+                st.write(f"**Academic Goals:** {profile.get('Academic Goals', 'N/A')}")
+                st.write(f"**Major:** {profile.get('Major', 'N/A')}")
+                st.write(f"**Hobbies:** {profile.get('Hobbies', 'N/A')}")
+                st.write(f"**Computer Skills:** {profile.get('Computer Skills', 'N/A')}")
+                st.write(f"**Languages:** {profile.get('Interest in Languages', 'N/A')}")
+                st.write(f"**GPA:** {profile.get('GPA', 'N/A')}")
+            
+            with col2:
+                st.subheader("Recommended Courses")
+                st.markdown(rec['recommended_courses'])
+            
+            if rec['course_details']:
+                st.subheader("Course Details")
+                st.markdown(rec['course_details'])
+
+def main():
+    st.set_page_config(
+        page_title="Course Recommendation System", 
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # Initialize database and auth managers
+    db_manager = DatabaseManager()
+    auth_manager = AuthManager(db_manager)
+    
+    # Initialize session state
+    auth_manager.init_session_state()
+    
+    # Create database tables if they don't exist
+    db_manager.create_tables()
+    
+    # Check if user is logged in
+    if not auth_manager.is_logged_in():
+        auth_manager.login_page()
+    else:
+        show_user_dashboard(auth_manager, db_manager)
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,7 @@
+streamlit
+pandas
+PyYAML
+python-docx
+python-dotenv
+PyPDF2
+crewai
