@@ -118,7 +118,7 @@ def analyze_cv_with_agent(cv_text, llm):
         required_fields = ['Academic Goals', 'Major', 'Hobbies', 'Computer Skills', 'Interest in Languages', 'GPA']
         for field in required_fields:
             if field not in data:
-                data[field] = "Not specified in CV"
+                data[field] = "Non spécifié dans le CV"
         
         # Convert GPA to float if it's a string
         if isinstance(data['GPA'], str) and data['GPA'].replace('.', '', 1).isdigit():
@@ -128,15 +128,15 @@ def analyze_cv_with_agent(cv_text, llm):
         
         return data
     except Exception as e:
-        st.error(f"Error parsing CV analysis result: {str(e)}")
-        st.write("Raw result:", result)
+        st.error(f"Erreur lors de l'analyse du CV : {str(e)}")
+        st.write("Résultat brut :", result)
         # Return default values
         return {
-            'Academic Goals': "Not specified in CV",
-            'Major': "Not specified in CV",
-            'Hobbies': "Not specified in CV",
-            'Computer Skills': "Intermediate",
-            'Interest in Languages': "Not specified in CV",
+            'Academic Goals': "Non spécifié dans le CV",
+            'Major': "Non spécifié dans le CV",
+            'Hobbies': "Non spécifié dans le CV",
+            'Computer Skills': "Intermédiaire",
+            'Interest in Languages': "Non spécifié dans le CV",
             'GPA': 3.0
         }
 
@@ -144,12 +144,12 @@ def run_recommendation(student_data, db_manager, user_id):
     """Run the recommendation system with the provided student data."""
     # Format student description
     customer_description = f"""
-    Their academic goals are {student_data['Academic Goals']}.
-    Their major is in {student_data['Major']}.
-    Their Hobbies are {student_data['Hobbies']}.
-    Their computer skills are {student_data['Computer Skills']}.
-    Their interest in languages are {student_data['Interest in Languages']}.
-    Their GPA is {student_data['GPA']}.
+    Leurs objectifs académiques sont {student_data['Academic Goals']}.
+    Leur spécialité est en {student_data['Major']}.
+    Leurs loisirs sont {student_data['Hobbies']}.
+    Leurs compétences informatiques sont {student_data['Computer Skills']}.
+    Leur intérêt pour les langues est {student_data['Interest in Languages']}.
+    Leur moyenne générale est {student_data['GPA']}.
     """
     
     # Load courses data
@@ -183,13 +183,13 @@ def run_recommendation(student_data, db_manager, user_id):
     
     # Add progress bar for first task
     progress_bar1 = st.progress(0)
-    st.text("Step 1/2: Analyzing your profile and selecting courses...")
+    st.text("Étape 1/2 : Analyse de votre profil et sélection des cours...")
     
     try:
         targeting_result = targeting_crew.kickoff()
         progress_bar1.progress(100)
     except Exception as e:
-        st.error(f"An error occurred during course selection: {str(e)}")
+        st.error(f"Une erreur s'est produite lors de la sélection des cours : {str(e)}")
         return None, None
     
     # Task 2: Generate recommendation campaign
@@ -200,7 +200,7 @@ def run_recommendation(student_data, db_manager, user_id):
     
     # Add progress bar for second task
     progress_bar2 = st.progress(0)
-    st.text("Step 2/2: Creating personalized recommendations...")
+    st.text("Étape 2/2 : Création de recommandations personnalisées...")
     
     # Create and run second crew
     copywriting_crew = Crew(
@@ -227,7 +227,7 @@ def run_recommendation(student_data, db_manager, user_id):
         
         return targeting_result, copywriting_result
     except Exception as e:
-        st.error(f"An error occurred during recommendation creation: {str(e)}")
+        st.error(f"Une erreur s'est produite lors de la création des recommandations : {str(e)}")
         return targeting_result, None
 
 def show_user_dashboard(auth_manager, db_manager):
@@ -236,32 +236,32 @@ def show_user_dashboard(auth_manager, db_manager):
     
     # Sidebar with user info and logout
     with st.sidebar:
-        st.header(f"Welcome, {user.get('full_name', user.get('username', 'User'))}! 👋")
-        st.write(f"**Username:** {user.get('username')}")
-        st.write(f"**Email:** {user.get('email')}")
+        st.header(f"Bienvenue, {user.get('full_name', user.get('username', 'Utilisateur'))} ! 👋")
+        st.write(f"**Nom d'utilisateur :** {user.get('username')}")
+        st.write(f"**Email :** {user.get('email')}")
         
         st.markdown("---")
         
-        if st.button("🔓 Logout", type="secondary"):
+        if st.button("🔓 Déconnexion", type="secondary"):
             auth_manager.logout()
         
         st.markdown("---")
         
         # Navigation
-        page = st.radio("Navigate", ["Get Recommendations", "My History"])
+        page = st.radio("Navigation", ["Obtenir des Recommandations", "Mon Historique"])
     
-    if page == "Get Recommendations":
+    if page == "Obtenir des Recommandations":
         show_recommendation_page(db_manager, user['id'])
     else:
         show_history_page(db_manager, user['id'])
 
 def show_recommendation_page(db_manager, user_id):
     """Show the main recommendation page"""
-    st.title("Personalized Course Recommendation System")
-    st.write("Get personalized course recommendations based on your profile")
+    st.title("Système de Recommandation de Cours Personnalisé")
+    st.write("Obtenez des recommandations de cours personnalisées basées sur votre profil")
     
     # Create tabs for different input methods
-    tab1, tab2 = st.tabs(["Upload CV/Resume", "Fill Form"])
+    tab1, tab2 = st.tabs(["Télécharger CV/Résumé", "Remplir le Formulaire"])
     
     student_data = None
     submit_pressed = False
@@ -271,8 +271,8 @@ def show_recommendation_page(db_manager, user_id):
     
     # Tab 1: CV Upload
     with tab1:
-        st.header("Upload your CV/Resume")
-        uploaded_file = st.file_uploader("Choose a file", type=["pdf", "docx", "txt"])
+        st.header("Téléchargez votre CV/Résumé")
+        uploaded_file = st.file_uploader("Choisissez un fichier", type=["pdf", "docx", "txt"])
         
         if uploaded_file is not None:
             try:
@@ -284,79 +284,107 @@ def show_recommendation_page(db_manager, user_id):
                 elif uploaded_file.name.endswith('.txt'):
                     cv_text = extract_text_from_txt(uploaded_file)
                 else:
-                    st.error("Unsupported file format")
+                    st.error("Format de fichier non pris en charge")
                     st.stop()
                 
                 # Show CV analysis in progress
-                with st.spinner("Analyzing your CV..."):
-                    st.success("File uploaded successfully!")
+                with st.spinner("Analyse de votre CV..."):
+                    st.success("Fichier téléchargé avec succès !")
                     
                     # Use the CV analyzer agent to extract information
                     extracted_data = analyze_cv_with_agent(cv_text, llm)
                 
                 # Display extracted information for verification
-                st.subheader("Extracted Information")
-                st.info("Please verify and edit the extracted information if needed:")
+                st.subheader("Informations Extraites")
+                st.info("Veuillez vérifier et modifier les informations extraites si nécessaire :")
                 
                 # Allow user to edit the extracted information
-                academic_goals = st.text_area("Academic Goals", value=extracted_data['Academic Goals'])
-                major = st.text_input("Major", value=extracted_data['Major'])
-                hobbies = st.text_input("Hobbies", value=extracted_data['Hobbies'])
+                academic_goals = st.text_area("Objectifs Académiques", value=extracted_data['Academic Goals'])
+                major = st.text_input("Spécialité", value=extracted_data['Major'])
+                hobbies = st.text_input("Loisirs", value=extracted_data['Hobbies'])
                 
                 # Determine index for computer skills dropdown
-                skills_options = ["Beginner", "Intermediate", "Advanced", "Expert"]
-                skill_index = 1  # Default to Intermediate
-                if extracted_data['Computer Skills'] in skills_options:
-                    skill_index = skills_options.index(extracted_data['Computer Skills'])
+                skills_options = ["Débutant", "Intermédiaire", "Avancé", "Expert"]
+                skill_mapping = {
+                    "Beginner": "Débutant",
+                    "Intermediate": "Intermédiaire", 
+                    "Advanced": "Avancé",
+                    "Expert": "Expert"
+                }
                 
-                computer_skills = st.selectbox("Computer Skills", 
+                # Map English to French if needed
+                current_skill = extracted_data['Computer Skills']
+                if current_skill in skill_mapping:
+                    current_skill = skill_mapping[current_skill]
+                
+                skill_index = 1  # Default to Intermédiaire
+                if current_skill in skills_options:
+                    skill_index = skills_options.index(current_skill)
+                
+                computer_skills = st.selectbox("Compétences Informatiques", 
                                               skills_options,
                                               index=skill_index)
                 
-                interest_in_languages = st.text_input("Interest in Languages", value=extracted_data['Interest in Languages'])
-                gpa = st.slider("GPA", min_value=0.0, max_value=4.0, value=float(extracted_data['GPA']), step=0.1)
+                interest_in_languages = st.text_input("Intérêt pour les Langues", value=extracted_data['Interest in Languages'])
+                gpa = st.slider("Moyenne Générale", min_value=0.0, max_value=4.0, value=float(extracted_data['GPA']), step=0.1)
+                
+                # Map French back to English for internal processing
+                skill_reverse_mapping = {
+                    "Débutant": "Beginner",
+                    "Intermédiaire": "Intermediate",
+                    "Avancé": "Advanced",
+                    "Expert": "Expert"
+                }
                 
                 # Update student data
                 student_data = {
                     'Academic Goals': academic_goals,
                     'Major': major,
                     'Hobbies': hobbies,
-                    'Computer Skills': computer_skills,
+                    'Computer Skills': skill_reverse_mapping.get(computer_skills, computer_skills),
                     'Interest in Languages': interest_in_languages,
                     'GPA': gpa
                 }
                 
-                submit_pressed = st.button("Get Recommendations", key="cv_submit")
+                submit_pressed = st.button("Obtenir des Recommandations", key="cv_submit")
                 
             except Exception as e:
-                st.error(f"Error processing file: {str(e)}")
+                st.error(f"Erreur lors du traitement du fichier : {str(e)}")
     
     # Tab 2: Manual Form
     with tab2:
-        st.header("Enter Your Information")
+        st.header("Saisissez Vos Informations")
         
         with st.form("student_info_form"):
             col1, col2 = st.columns(2)
             
             with col1:
-                academic_goals = st.text_area("Academic Goals", placeholder="E.g., To become a software engineer")
-                major = st.text_input("Major", placeholder="E.g., Computer Science")
-                hobbies = st.text_input("Hobbies", placeholder="E.g., Gaming, Reading")
+                academic_goals = st.text_area("Objectifs Académiques", placeholder="Ex: Devenir ingénieur logiciel")
+                major = st.text_input("Spécialité", placeholder="Ex: Informatique")
+                hobbies = st.text_input("Loisirs", placeholder="Ex: Jeux vidéo, Lecture")
             
             with col2:
-                computer_skills = st.selectbox("Computer Skills", 
-                                              ["Beginner", "Intermediate", "Advanced", "Expert"])
-                interest_in_languages = st.text_input("Interest in Languages", placeholder="E.g., Spanish, Python")
-                gpa = st.slider("GPA", min_value=0.0, max_value=4.0, value=3.0, step=0.1)
+                computer_skills = st.selectbox("Compétences Informatiques", 
+                                              ["Débutant", "Intermédiaire", "Avancé", "Expert"])
+                interest_in_languages = st.text_input("Intérêt pour les Langues", placeholder="Ex: Espagnol, Python")
+                gpa = st.slider("Moyenne Générale", min_value=0.0, max_value=4.0, value=3.0, step=0.1)
             
-            form_submit = st.form_submit_button("Get Recommendations")
+            form_submit = st.form_submit_button("Obtenir des Recommandations")
             
             if form_submit:
+                # Map French to English for internal processing
+                skill_mapping = {
+                    "Débutant": "Beginner",
+                    "Intermédiaire": "Intermediate",
+                    "Avancé": "Advanced",
+                    "Expert": "Expert"
+                }
+                
                 student_data = {
                     'Academic Goals': academic_goals,
                     'Major': major,
                     'Hobbies': hobbies,
-                    'Computer Skills': computer_skills,
+                    'Computer Skills': skill_mapping.get(computer_skills, computer_skills),
                     'Interest in Languages': interest_in_languages,
                     'GPA': gpa
                 }
@@ -364,79 +392,79 @@ def show_recommendation_page(db_manager, user_id):
     
     # Process recommendations if data is available and button is pressed
     if student_data and submit_pressed:
-        with st.spinner("Analyzing your profile and finding the best courses for you..."):
+        with st.spinner("Analyse de votre profil et recherche des meilleurs cours pour vous..."):
             targeting_result, copywriting_result = run_recommendation(student_data, db_manager, user_id)
             
             if targeting_result:
                 # Display results in tabs
-                st.success("Recommendations complete!")
+                st.success("Recommandations terminées !")
                 
-                result_tab1, result_tab2 = st.tabs(["Selected Courses", "Detailed Recommendations"])
+                result_tab1, result_tab2 = st.tabs(["Cours Sélectionnés", "Recommandations Détaillées"])
                 
                 with result_tab1:
-                    st.header("Selected Courses for You")
+                    st.header("Cours Sélectionnés pour Vous")
                     st.markdown(targeting_result)
                 
                 with result_tab2:
-                    st.header("Why These Courses Are Perfect for You")
+                    st.header("Pourquoi Ces Cours Sont Parfaits pour Vous")
                     if copywriting_result:
                         st.markdown(copywriting_result)
                     else:
-                        st.warning("Detailed recommendations could not be generated.")
+                        st.warning("Les recommandations détaillées n'ont pas pu être générées.")
                 
                 # Add download option
                 results_df = pd.DataFrame([{
-                    'Profile': json.dumps(student_data),
-                    'Recommended Courses': str(targeting_result),
-                    'Course Details': str(copywriting_result) if copywriting_result else "Not available"
+                    'Profil': json.dumps(student_data),
+                    'Cours Recommandés': str(targeting_result),
+                    'Détails des Cours': str(copywriting_result) if copywriting_result else "Non disponible"
                 }])
                 
                 csv = results_df.to_csv(index=False)
                 st.download_button(
-                    label="Download Recommendations",
+                    label="Télécharger les Recommandations",
                     data=csv,
-                    file_name="course_recommendations.csv",
+                    file_name="recommandations_cours.csv",
                     mime="text/csv"
                 )
 
 def show_history_page(db_manager, user_id):
     """Show user's recommendation history"""
-    st.title("My Recommendation History")
+    st.title("Mon Historique de Recommandations")
     
     recommendations = db_manager.get_user_recommendations(user_id)
     
     if not recommendations:
-        st.info("You haven't generated any recommendations yet. Go to 'Get Recommendations' to start!")
+        st.info("Vous n'avez encore généré aucune recommandation. Allez dans 'Obtenir des Recommandations' pour commencer !")
         return
     
-    st.write(f"You have {len(recommendations)} saved recommendations:")
+    st.write(f"Vous avez {len(recommendations)} recommandations sauvegardées :")
     
     for i, rec in enumerate(recommendations, 1):
-        with st.expander(f"Recommendation #{i} - {rec['created_at'].strftime('%Y-%m-%d %H:%M')}"):
+        with st.expander(f"Recommandation #{i} - {rec['created_at'].strftime('%d/%m/%Y %H:%M')}"):
             
             col1, col2 = st.columns(2)
             
             with col1:
-                st.subheader("Your Profile")
+                st.subheader("Votre Profil")
                 profile = rec['student_profile']
-                st.write(f"**Academic Goals:** {profile.get('Academic Goals', 'N/A')}")
-                st.write(f"**Major:** {profile.get('Major', 'N/A')}")
-                st.write(f"**Hobbies:** {profile.get('Hobbies', 'N/A')}")
-                st.write(f"**Computer Skills:** {profile.get('Computer Skills', 'N/A')}")
-                st.write(f"**Languages:** {profile.get('Interest in Languages', 'N/A')}")
-                st.write(f"**GPA:** {profile.get('GPA', 'N/A')}")
+                st.write(f"**Objectifs Académiques :** {profile.get('Academic Goals', 'N/A')}")
+                st.write(f"**Spécialité :** {profile.get('Major', 'N/A')}")
+                st.write(f"**Loisirs :** {profile.get('Hobbies', 'N/A')}")
+                st.write(f"**Compétences Informatiques :** {profile.get('Computer Skills', 'N/A')}")
+                st.write(f"**Langues :** {profile.get('Interest in Languages', 'N/A')}")
+                st.write(f"**Moyenne :** {profile.get('GPA', 'N/A')}")
             
             with col2:
-                st.subheader("Recommended Courses")
+                st.subheader("Cours Recommandés")
                 st.markdown(rec['recommended_courses'])
             
             if rec['course_details']:
-                st.subheader("Course Details")
+                st.subheader("Détails des Cours")
                 st.markdown(rec['course_details'])
 
 def main():
     st.set_page_config(
-        page_title="Course Recommendation System", 
+        page_title="Système de Recommandation de Cours", 
         layout="wide",
         initial_sidebar_state="expanded"
     )

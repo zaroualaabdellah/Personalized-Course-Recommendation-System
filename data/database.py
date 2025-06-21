@@ -29,7 +29,7 @@ class DatabaseManager:
             if self.connection.is_connected():
                 return True
         except Error as e:
-            st.error(f"Database connection error: {e}")
+            st.error(f"Erreur de connexion à la base de données : {e}")
             return False
         return False
     
@@ -94,7 +94,7 @@ class DatabaseManager:
             return True
             
         except Error as e:
-            st.error(f"Error creating tables: {e}")
+            st.error(f"Erreur lors de la création des tables : {e}")
             return False
         finally:
             cursor.close()
@@ -128,9 +128,9 @@ class DatabaseManager:
             
         except Error as e:
             if "Duplicate entry" in str(e):
-                st.error("Username or email already exists!")
+                st.error("Le nom d'utilisateur ou l'email existe déjà !")
             else:
-                st.error(f"Error creating user: {e}")
+                st.error(f"Erreur lors de la création de l'utilisateur : {e}")
             return False
         finally:
             cursor.close()
@@ -166,7 +166,7 @@ class DatabaseManager:
             return None
             
         except Error as e:
-            st.error(f"Authentication error: {e}")
+            st.error(f"Erreur d'authentification : {e}")
             return None
         finally:
             cursor.close()
@@ -193,7 +193,7 @@ class DatabaseManager:
             return True
             
         except Error as e:
-            st.error(f"Error saving recommendation: {e}")
+            st.error(f"Erreur lors de la sauvegarde de la recommandation : {e}")
             return False
         finally:
             cursor.close()
@@ -226,7 +226,7 @@ class DatabaseManager:
             return recommendations
             
         except Error as e:
-            st.error(f"Error fetching recommendations: {e}")
+            st.error(f"Erreur lors de la récupération des recommandations : {e}")
             return []
         finally:
             cursor.close()
@@ -255,22 +255,21 @@ class AuthManager:
         """Display login page"""
         # Create three columns to center content
         col1, col2, col3 = st.columns([1, 2, 1])
-        with col3:
-            st.image("logo/logo4.png", width=250)
-            st.markdown("<h1 style='text-align: center;'>🎓 Course Recommendation System</h1>", unsafe_allow_html=True)
+        with col2: 
+            st.markdown("<h4 style='text-align: center;'>Système de Recommandation de Cours</h4>", unsafe_allow_html=True)
 
         st.markdown("---")
         
         # Create tabs for login and registration
-        login_tab, register_tab = st.tabs(["Login", "Register"])
+        login_tab, register_tab = st.tabs(["Connexion", "Inscription"])
         
         with login_tab:
-            st.header("Login to Your Account")
+            st.header("Connectez-vous à votre compte")
             
             with st.form("login_form"):
-                username = st.text_input("Username")
-                password = st.text_input("Password", type="password")
-                login_button = st.form_submit_button("Login")
+                username = st.text_input("Nom d'utilisateur")
+                password = st.text_input("Mot de passe", type="password")
+                login_button = st.form_submit_button("Se connecter")
                 
                 if login_button:
                     if username and password:
@@ -278,36 +277,36 @@ class AuthManager:
                         if user_data:
                             st.session_state.logged_in = True
                             st.session_state.user_data = user_data
-                            st.success("Login successful!")
+                            st.success("Connexion réussie !")
                             st.rerun()
                         else:
-                            st.error("Invalid username or password!")
+                            st.error("Nom d'utilisateur ou mot de passe incorrect !")
                     else:
-                        st.error("Please enter both username and password!")
+                        st.error("Veuillez saisir votre nom d'utilisateur et mot de passe !")
         
         with register_tab:
-            st.header("Create New Account")
+            st.header("Créer un nouveau compte")
             
             with st.form("register_form"):
-                new_username = st.text_input("Username", key="reg_username")
+                new_username = st.text_input("Nom d'utilisateur", key="reg_username")
                 new_email = st.text_input("Email", key="reg_email")
-                new_full_name = st.text_input("Full Name", key="reg_full_name")
-                new_password = st.text_input("Password", type="password", key="reg_password")
-                confirm_password = st.text_input("Confirm Password", type="password", key="reg_confirm")
-                register_button = st.form_submit_button("Register")
+                new_full_name = st.text_input("Nom complet", key="reg_full_name")
+                new_password = st.text_input("Mot de passe", type="password", key="reg_password")
+                confirm_password = st.text_input("Confirmer le mot de passe", type="password", key="reg_confirm")
+                register_button = st.form_submit_button("S'inscrire")
                 
                 if register_button:
                     if not all([new_username, new_email, new_password, confirm_password]):
-                        st.error("Please fill in all required fields!")
+                        st.error("Veuillez remplir tous les champs obligatoires !")
                     elif new_password != confirm_password:
-                        st.error("Passwords do not match!")
+                        st.error("Les mots de passe ne correspondent pas !")
                     elif len(new_password) < 6:
-                        st.error("Password must be at least 6 characters long!")
+                        st.error("Le mot de passe doit contenir au moins 6 caractères !")
                     else:
                         if self.db.create_user(new_username, new_email, new_password, new_full_name):
-                            st.success("Account created successfully! Please login.")
+                            st.success("Compte créé avec succès ! Veuillez vous connecter.")
                         else:
-                            st.error("Failed to create account. Username or email may already exist.")
+                            st.error("Échec de la création du compte. Le nom d'utilisateur ou l'email existe peut-être déjà.")
     
     def logout(self):
         """Logout user"""
